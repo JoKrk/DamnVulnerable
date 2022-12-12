@@ -1,16 +1,27 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.4;
 
-import { console2 } from "forge-std/console2.sol";
 import { PRBTest } from "@prb/test/PRBTest.sol";
-import { StdCheats } from "forge-std/StdCheats.sol";
+import "forge-std/Test.sol";
+import {UnstoppableLender} from "src/unstoppable/UnstoppableLender.sol";
+import {ReceiverUnstoppable} from "src/unstoppable/ReceiverUnstoppable.sol";
 
-/// @dev See the "Writing Tests" section in the Foundry Book if this is your first time with Forge.
+
 /// https://book.getfoundry.sh/forge/writing-tests
-contract FooTest is PRBTest, StdCheats {
+contract Unstoppable is PRBTest, Test {
+
+
+    address private deployer;
+    address private attacker;
+    address private someUser;
+    
     function setUp() public {
         // solhint-disable-previous-line no-empty-blocks
-        
+        deployer = vm.addr(1);
+        attacker = vm.addr(2);
+        someUser = vm.addr(3);
+
+
     }
 
     /// @dev Run Forge with `-vvvv` to see console logs.
