@@ -21,7 +21,7 @@ contract Unstoppable is PRBTest, Test {
         attacker = vm.addr(2);
         someUser = vm.addr(3);
 
-
+        
     }
 
     /// @dev Run Forge with `-vvvv` to see console logs.
