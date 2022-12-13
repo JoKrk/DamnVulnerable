@@ -32,7 +32,7 @@ contract SideAttacker is IFlashLoanEtherReceiver {
 
     function execute() external payable {
         console2.log("message value of", msg.value);
-        LenderPool.deposit{value: msg.value};
+        LenderPool.deposit{value:  msg.value}();
     }
 
     receive() external payable {}
