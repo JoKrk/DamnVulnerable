@@ -91,7 +91,7 @@ contract TheRewarder is Test {
         vm.warp(block.timestamp + 5 days);
         vm.startPrank(attacker);
         AttackerContract attack = new AttackerContract(address(dvt), 
-            address(theRewarderPool), address(flashLoanerPool), address(reward));
+            address(theRewarderPool), address(flashLoanerPool));
         attack.execute();
         vm.stopPrank();
         /**
