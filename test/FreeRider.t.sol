@@ -6,6 +6,7 @@ import "forge-std/Test.sol";
 import {FreeRiderBuyer} from "src/free-rider/FreeRiderBuyer.sol";
 import {FreeRiderNFTMarketplace} from "src/free-rider/FreeRiderNFTMarketplace.sol";
 import {IUniswapV2Router02, IUniswapV2Factory, IUniswapV2Pair} from "src/free-rider/Interfaces.sol";
+import {AttackerContract} from "src/free-rider/AttackerContract.sol";
 import {DamnValuableNFT} from "src/DamnValuableNFT.sol";
 import {DamnValuableToken} from "src/DamnValuableToken.sol";
 import {WETH9} from "src/WETH9.sol";
@@ -134,7 +135,11 @@ contract FreeRider is Test {
         /**
          * EXPLOIT START *
          */
-        vm.startPrank(attacker, attacker);
+        vm.startPrank(attacker);
+        AttackerContract attackerC = new AttackerContract{value: 0.4 ether}
+            (address(uniswapV2Pair), freeRiderBuyer,
+            freeRiderNFTMarketplace, address(damnValuableNFT));
+        attackerC.snatchNFTs();
 
         vm.stopPrank();
         /**
@@ -150,6 +155,7 @@ contract FreeRider is Test {
          */
 
         // Attacker must have earned all ETH from the payout
+        console2.log("starting validation");
         assertGt(attacker.balance, BUYER_PAYOUT);
         assertEq(address(freeRiderBuyer).balance, 0);
 

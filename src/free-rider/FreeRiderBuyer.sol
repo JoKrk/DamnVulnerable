@@ -5,12 +5,13 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "forge-std/Test.sol";
 
 /**
  * @title FreeRiderBuyer
  * @author Damn Vulnerable DeFi (https://damnvulnerabledefi.xyz)
  */
-contract FreeRiderBuyer is ReentrancyGuard, IERC721Receiver {
+contract FreeRiderBuyer is ReentrancyGuard, IERC721Receiver, Test {
     using Address for address payable;
 
     address private immutable partner;
@@ -32,16 +33,16 @@ contract FreeRiderBuyer is ReentrancyGuard, IERC721Receiver {
         nonReentrant
         returns (bytes4)
     {
-        require(msg.sender == address(nft));
-        require(tx.origin == partner);
-        require(_tokenId >= 0 && _tokenId <= 5);
-        require(nft.ownerOf(_tokenId) == address(this));
-
+        require(msg.sender == address(nft), "message sender incorrect");
+        require(tx.origin == partner, "tx origin is not partner");
+        require(_tokenId >= 0 && _tokenId <= 5, "incorrect token id");
+        require(nft.ownerOf(_tokenId) == address(this), "not owner of nft");
+        console2.log("received token %s", _tokenId);
         received++;
         if (received == 6) {
             payable(partner).sendValue(JOB_PAYOUT);
         }
-
+        console2.log("sent payout");
         return IERC721Receiver.onERC721Received.selector;
     }
 }
