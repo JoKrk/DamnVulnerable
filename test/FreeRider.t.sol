@@ -136,7 +136,7 @@ contract FreeRider is Test {
          * EXPLOIT START *
          */
         vm.startPrank(attacker);
-        AttackerContract attackerC = new AttackerContract{value: 0.4 ether}
+        AttackerContract attackerC = new AttackerContract{value: 0.3 ether}
             (address(uniswapV2Pair), freeRiderBuyer,
             freeRiderNFTMarketplace, address(damnValuableNFT));
         attackerC.snatchNFTs();
